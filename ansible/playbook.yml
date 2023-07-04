@@ -1,0 +1,40 @@
+---
+- name: Provisioning Playbook
+  hosts: all
+  become: true
+
+  tasks:
+    - name: Install required packages
+      apt:
+        name: "{{ item }}"
+        state: present
+      with_items:
+        - vim
+        - curl
+        - telnet
+        - unzip
+        - wget
+        - net-tools
+        - htop
+        - nmap
+
+    - name: Set hostname
+      hostname:
+        name: "ansible-common"
+
+    - name: Create user with SSH key
+      user:
+        name: "leandro goncalves"
+        shell: /bin/bash
+        generate_ssh_key: yes
+        ssh_key_bits: 2048
+        ssh_key_file: "~/.ssh/id_rsa"
+        ssh_key_comment: "leandro.goncalves@abuzitos.com.br"
+        createhome: yes
+      register: user_output
+
+    - name: Add public key to authorized_keys
+      authorized_key:
+        user: "leandro goncalves"
+        state: present
+        key: "{{ lookup('file', '~/.ssh/id_rsa.pub') }}"
